@@ -191,7 +191,7 @@ const SNACK_BRANDS=['Orion','Lotte','Haitai','Crown','Glico','Weilong','KAYU','J
 def({id:'groceries',name:'Groceries',parent:null,icon:'🍜',
   children:['instant-noodles','quickmeals','rice','noodles','flour','sauces','oils','preserved','ricecakes','seaweed','sushi','curry'],
   collections:[{id:'col-buldak',name:'Buldak',tag:'brand'},{id:'col-kimchi',name:'Kimchi',tag:'trend'},{id:'col-gochujang',name:'Gochujang',tag:'trend'}],
-  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
+  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Vegan','Halal']});
 
 def({id:'snacks',name:'Snacks',parent:null,icon:'🍪',
   children:['sn-chips','sn-savory','sn-latiao','sn-sweets','sn-cakes','sn-matcha','sn-mochi','sn-choco','sn-konjac'],
@@ -199,8 +199,8 @@ def({id:'snacks',name:'Snacks',parent:null,icon:'🍪',
   sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:SNACK_BRANDS},exposed:['Spicy','Vegan']});
 
 def({id:'drinks',name:'Drinks',parent:null,icon:'🧋',
-  children:['dr-alcohol','dr-coffee','dr-tea','dr-sparkling','dr-lowcal','dr-bubble','dr-matcha','dr-yuzu','dr-juice','dr-pouch'],
-  collections:[{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-soju',name:'Soju',tag:'trend'}],
+  children:['dr-alcohol','dr-coffee','dr-tea','dr-sparkling','dr-bubble','dr-matcha','dr-yuzu','dr-juice','dr-pouch'],
+  collections:[{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-soju',name:'Soju',tag:'trend'},{id:'col-lowcal',name:'Low-calorie',tag:'collection'},{id:'col-anime',name:'Anime & Sanrio',tag:'collection'}],
   sheet:{diet:['Vegan','Halal','Sugar free','Zero'],brand:DRINK_BRANDS},exposed:['Sugar free','Vegan']});
 
 def({id:'mealkits',name:'Meal kits',parent:null,icon:'🥘',
@@ -224,7 +224,7 @@ def({id:'instant-noodles',name:'Instant noodles',parent:'quickmeals',
         ['Ottogi Jin Ramen Mild 120g',1.29,['Mild'],'Packet','Ottogi']]});
 
 def({id:'quickmeals',name:'Quick meals (Schnelle Küche)',parent:'groceries',children:['instant-noodles','qm-soup','qm-rice'],
-  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan'],
+  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Vegan','Halal'],
   sorts:['Popularity','Newest','MD pick']});
 def({id:'qm-soup',name:'Soup',parent:'quickmeals',pool:[
   ['Bibigo Beef Doenjang Soup 460g',3.49,[],'','CJ'],
@@ -257,11 +257,14 @@ def({id:'sc-soy',name:'Soy sauce & Vinegar',parent:'sauces',pool:[['Brown Rice V
 def({id:'sc-chili',name:'Chili sauces & Gochujang',parent:'sauces'});
 def({id:'sc-mayo',name:'Mayonnaise & Dressing',parent:'sauces'});
 
-def({id:'oils',name:'Oils & Spices',parent:'groceries',sheet:{brand:FOOD_BRANDS},exposed:[]});
+def({id:'oils',name:'Oils & Seasonings',parent:'groceries',children:['oils-oil'],sheet:{brand:FOOD_BRANDS},exposed:[]});
+def({id:'oils-oil',name:'Oil',parent:'oils'});
 
-def({id:'preserved',name:'Preserved & Fermented',parent:'groceries',children:['pf-pre','pf-fer'],sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan']});
-def({id:'pf-pre',name:'Konserven (Preserved)',parent:'preserved'});
-def({id:'pf-fer',name:'Fermentiert (Fermented)',parent:'preserved'});
+def({id:'preserved',name:'Preserved & Fermented',parent:'groceries',children:['pf-pickled','pf-kimchi','pf-gochujang','pf-dips'],sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan']});
+def({id:'pf-pickled',name:'Pickled',parent:'preserved'});
+def({id:'pf-kimchi',name:'Kimchi',parent:'preserved'});
+def({id:'pf-gochujang',name:'Gochujang',parent:'preserved'});
+def({id:'pf-dips',name:'Dips',parent:'preserved'});
 
 def({id:'ricecakes',name:'Rice cakes (Reiskuchen)',parent:'groceries',children:['rc-tteok','rc-plain'],sheet:{diet:['Vegan'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
 def({id:'rc-tteok',name:'Tteokbokki',parent:'ricecakes'});
@@ -372,6 +375,7 @@ const COLS = {
   'col-vegan':{name:'Vegan',tag:'Theme collection',sub:'Plant-based picks',seed:'groceries'},
   'col-new':{name:'New / Trend',tag:'Theme collection',sub:'Fresh arrivals and what is trending',seed:'groceries'},
   'col-anime':{name:'Anime & Sanrio',tag:'Collection',sub:'Character snacks and drinks',seed:'sn-sweets'},
+  'col-lowcal':{name:'Low-calorie',tag:'Collection',sub:'Low calorie drinks under 50kcal',seed:'dr-sparkling'},
   'col-latiao':{name:'Latiao',tag:'Trend collection',sub:'The spicy strips everyone talks about',seed:'sn-latiao'},
   'col-soju':{name:'Soju',tag:'Trend collection',sub:'Original and flavored soju',seed:'al-soju'}
 };
