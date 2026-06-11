@@ -61,7 +61,26 @@ header.bar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:14
 .count{font-size:12px; color:var(--muted); margin:12px 0 8px}
 .grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
 .pcard{background:var(--card); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
-.pimg{height:96px; background:#EFEDE4; display:flex; align-items:center; justify-content:center; color:#C2BFB1; font-size:20px}
+.pimg{height:96px; background:#EFEDE4; display:flex; align-items:center; justify-content:center; color:#C2BFB1; font-size:20px; position:relative}
+.ptags{position:absolute; top:6px; left:6px; display:flex; gap:4px}
+.ptags .badge{margin:0; box-shadow:0 1px 2px rgba(0,0,0,.14)}
+.topnav{display:flex; gap:14px; overflow-x:auto; scrollbar-width:none; font-size:12px; padding:4px 2px 9px; border-bottom:1px solid var(--line); margin-bottom:8px}
+.topnav::-webkit-scrollbar{display:none}
+.topnav a{color:var(--faint); text-decoration:none; white-space:nowrap}
+.topnav a.cur{color:var(--blue); font-weight:700}
+.tstrip{display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; margin-bottom:16px}
+.tstrip::-webkit-scrollbar{display:none}
+.tcard{flex:0 0 auto; width:140px; background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; cursor:pointer}
+.tcard:active{background:#FAF8F2}
+.tcard .tthumb{height:72px; background:#EFEDE4; display:flex; align-items:center; justify-content:center; color:#C2BFB1}
+.tcard .tb{padding:9px 11px}
+.tcard .nm{font-size:13.5px; font-weight:600}
+.tcard .tg{font-size:11px; color:var(--faint); margin-top:1px}
+.catrow{display:grid; grid-template-rows:repeat(2,auto); grid-auto-flow:column; grid-auto-columns:max-content; gap:8px; overflow-x:auto; scrollbar-width:none; padding-bottom:4px; margin-bottom:18px}
+.catrow::-webkit-scrollbar{display:none}
+.catcard{display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:9px 14px 9px 10px; cursor:pointer; white-space:nowrap; font-size:13px; font-weight:600}
+.catcard:active{background:#FAF8F2}
+.catcard span{font-size:16px}
 .pbody{padding:8px 10px 10px}
 .badge{display:inline-block; font-size:10.5px; border-radius:5px; padding:2px 7px; margin-right:4px}
 .badge.spicy{background:var(--amber-soft); color:var(--amber-ink)}
@@ -138,7 +157,7 @@ svg.ic.sm{width:14px; height:14px}
     <div class="sheet" id="fsheet"></div>
     <div class="sheet" id="ssheet"></div>
   </div>
-  <div id="cap">momogo(mobile)prototype_with Ok,Claude 카테고리 탐색/필터/정렬 확인용</div>
+  <div id="cap">momogo(mobile) prototype · v2 — 카테고리 탐색/필터/정렬 확인용 · 제품은 샘플 데이터</div>
 </div>
 
 <script>
@@ -175,12 +194,12 @@ def({id:'groceries',name:'Groceries',parent:null,icon:'🍜',
   sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
 
 def({id:'snacks',name:'Snacks',parent:null,icon:'🍪',
-  children:['sn-chips','sn-savory','sn-latiao','sn-sweets','sn-cakes','sn-mochi','sn-choco','sn-konjac'],
+  children:['sn-chips','sn-savory','sn-latiao','sn-sweets','sn-cakes','sn-matcha','sn-mochi','sn-choco','sn-konjac'],
   collections:[{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-anime',name:'Anime & Sanrio',tag:'collection'}],
   sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:SNACK_BRANDS},exposed:['Spicy','Vegan']});
 
 def({id:'drinks',name:'Drinks',parent:null,icon:'🧋',
-  children:['dr-alcohol','dr-coffee','dr-tea','dr-sparkling','dr-lowcal','dr-bubble','dr-yuzu','dr-juice','dr-pouch'],
+  children:['dr-alcohol','dr-coffee','dr-tea','dr-sparkling','dr-lowcal','dr-bubble','dr-matcha','dr-yuzu','dr-juice','dr-pouch'],
   collections:[{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-soju',name:'Soju',tag:'trend'}],
   sheet:{diet:['Vegan','Halal','Sugar free','Zero'],brand:DRINK_BRANDS},exposed:['Sugar free','Vegan']});
 
@@ -284,6 +303,7 @@ def({id:'ck-baum',name:'Baumkuchen',parent:'sn-cakes'});
 def({id:'ck-dora',name:'Dorayaki & Castella',parent:'sn-cakes'});
 def({id:'ck-pie',name:'Pie & Cake bars',parent:'sn-cakes'});
 
+def({id:'sn-matcha',name:'Matcha',parent:'snacks',sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan']});
 def({id:'sn-mochi',name:'Mochi',parent:'snacks',sheet:{diet:['Halal'],brand:SNACK_BRANDS},exposed:['Halal']});
 def({id:'sn-choco',name:'Chocolate-Primary (Choco)',parent:'snacks',sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan']});
 
@@ -298,7 +318,7 @@ def({id:'al-soju',name:'Soju',parent:'dr-alcohol',
   sheet:{diet:['Sugar free','Zero'],type:{label:'Flavor',opts:['Original','Flavored']},brand:['Jinro','Chum Churum','Good Day']},
   exposed:['Sugar free'],pool:[
   ['Jinro Chamisul Fresh 360ml',3.99,[],'Original','Jinro'],
-  ['Milkis Zero 250ml',1.39,['Sugar free','Zero'],'','Lotte'],
+  ['Chamisul Zero Sugar 360ml',4.19,['Sugar free','Zero'],'Original','Jinro'],
   ['Jinro Green Grape Soju 360ml',4.29,[],'Flavored','Jinro']]});
 def({id:'al-beer',name:'Beer',parent:'dr-alcohol'});
 def({id:'al-wine',name:'Rice wine',parent:'dr-alcohol'});
@@ -314,13 +334,14 @@ def({id:'te-grain',name:'Grain tea',parent:'dr-tea'});
 
 def({id:'dr-sparkling',name:'Sparkling (Mit Sprudel)',parent:'drinks',
   sheet:{diet:['Sugar free','Zero'],brand:DRINK_BRANDS},exposed:['Sugar free','Zero'],
-  pool:[['Milkis Original 250ml',1.29,[],'','Lotte'],['Chilsung Cider 250ml',1.19,['Vegan'],'','Lotte'],['OKF Sparkling Yuzu 350ml',1.79,[],'','OKF']]});
+  pool:[['Milkis Original 250ml',1.29,[],'','Lotte'],['Milkis Zero 250ml',1.39,['Sugar free','Zero'],'','Lotte'],['Chilsung Cider 250ml',1.19,['Vegan'],'','Lotte'],['OKF Sparkling Yuzu 350ml',1.79,[],'','OKF']]});
 
 def({id:'dr-lowcal',name:'Low calorie (Kalorienarm)',parent:'drinks',sheet:{diet:['Vegan','Halal','Sugar free','Zero'],brand:DRINK_BRANDS},exposed:['Sugar free','Zero']});
 def({id:'dr-bubble',name:'Bubble tea',parent:'drinks',children:['bt-kit','bt-can'],sheet:{diet:['Vegan','Halal'],brand:DRINK_BRANDS},exposed:['Vegan']});
 def({id:'bt-kit',name:'Kits',parent:'dr-bubble'});
 def({id:'bt-can',name:'Cans',parent:'dr-bubble'});
 
+def({id:'dr-matcha',name:'Matcha',parent:'drinks',sheet:{diet:['Vegan','Halal','Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free']});
 def({id:'dr-yuzu',name:'Yuzu drinks',parent:'drinks',sheet:{diet:['Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free']});
 def({id:'dr-juice',name:'Juice with fruit & jelly',parent:'drinks',sheet:{diet:['Halal'],brand:DRINK_BRANDS},exposed:['Halal']});
 def({id:'dr-pouch',name:'Korean pouch drinks',parent:'drinks',sheet:{diet:['Halal'],brand:DRINK_BRANDS},exposed:['Halal']});
@@ -328,7 +349,7 @@ def({id:'dr-pouch',name:'Korean pouch drinks',parent:'drinks',sheet:{diet:['Hala
 
 /* ---- 나머지 국가 카테고리 기틀 ---- */
 const KR_COLS=[{id:'col-kpop',name:'K-Pop',tag:'theme'},{id:'col-buldak',name:'Buldak',tag:'brand'},{id:'col-vegan',name:'Vegan',tag:'theme'},{id:'col-new',name:'New / Trend',tag:'theme'}];
-def({id:'korea',name:'Korea',parent:'countries',flag:'🇰🇷',children:['kr-kimchi','kr-ramyeon','kr-drinks'],collections:KR_COLS,sheet:{diet:['Vegan','Halal'],taste:['Spicy'],brand:FOOD_BRANDS}});
+def({id:'korea',name:'Korea',parent:'countries',flag:'🇰🇷',children:['kr-kimchi','kr-ramyeon','kr-drinks'],collections:KR_COLS,sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
 def({id:'kr-kimchi',name:'Kimchi',parent:'korea',pool:[['Jongga Mat Kimchi 500g',6.99,['Vegan'],'','Jongga'],['Bibigo Sliced Kimchi 500g',7.49,[],'','CJ']]});
 def({id:'kr-ramyeon',name:'Ramyeon',parent:'korea'});
 def({id:'kr-drinks',name:'Drinks',parent:'korea'});
@@ -363,7 +384,7 @@ function buildProducts(node){
   if(PRODUCTS[node.id])return PRODUCTS[node.id];
   let list=[];
   if(node.pool){ list=node.pool.map(p=>({name:p[0],price:p[1],badges:p[2],type:p[3],brand:p[4]})); }
-  if(node.children.length){ node.children.forEach(c=>{list=list.concat(buildProducts(N[c]))}); }
+  if(node.children.length){ node.children.forEach(c=>{list=list.concat(buildProducts(N[c]))}); const seen={}; list=list.filter(p=>seen[p.name]?false:(seen[p.name]=1)); }
   if(!list.length){
     const r=rng(node.id); const sheet=effSheet(node);
     const n=6+Math.floor(r()*5);
@@ -426,9 +447,14 @@ function badgeHtml(b){
 }
 function gridHtml(list){
   if(!list.length)return '<div class="empty">No products match these filters.<br>Try removing a filter to see more.</div>';
-  return '<div class="grid">'+list.map(p=>'<div class="pcard"><div class="pimg">'+IC.photo+'</div><div class="pbody">'+
-    (p.badges.slice(0,2).map(badgeHtml).join('')||'<span class="badge other" style="visibility:hidden">.</span>')+
-    '<div class="pprice">'+price(p.price)+'</div></div></div>').join('')+'</div>';
+  return '<div class="grid">'+list.map(p=>{
+    const tags=p.badges.filter(b=>b==='Vegan'||b==='Halal');
+    return '<div class="pcard"><div class="pimg">'+IC.photo+
+      (tags.length?'<div class="ptags">'+tags.map(badgeHtml).join('')+'</div>':'')+
+      '</div><div class="pbody">'+
+      '<div class="pname">'+esc(p.name)+'</div>'+
+      '<div class="pprice">'+price(p.price)+'</div></div></div>';
+  }).join('')+'</div>';
 }
 function crumbHtml(node){
   const chain=[]; let n=node; while(n){chain.unshift(n); n=N[n.parent];}
@@ -446,8 +472,17 @@ function frowHtml(node,sheet){
   let h='<div class="frow"><button class="fchip btn" onclick="openFilter()">'+IC.filter+' Filter'+(state.filters.length?' · '+state.filters.length:'')+'</button>';
   state.filters.forEach(f=>{h+='<button class="fchip act" onclick="toggleFilter(\''+f+'\')">'+esc(f)+' <span class="x">✕</span></button>'});
   exposed.forEach(f=>{h+='<button class="fchip" onclick="toggleFilter(\''+f+'\')">'+esc(f)+'</button>'});
+  if(sheet&&sheet.type&&!state.filters.some(f=>sheet.type.opts.includes(f))){
+    h+='<button class="fchip" onclick="openFilter()">'+esc(sheet.type.label)+' ▾</button>';
+  }
   h+='<button class="sortbtn" onclick="openSort()">'+IC.sort+' '+state.sort.split(':')[0]+'</button></div>';
   return h;
+}
+function topnavHtml(node){
+  const roots=['groceries','snacks','drinks','mealkits','snackboxes','home-lifestyle','countries'];
+  let r=node; while(r&&r.parent){r=N[r.parent];}
+  const cur=r?r.id:null;
+  return '<div class="topnav">'+roots.map(id=>'<a href="#" class="'+(id===cur?'cur':'')+'" onclick="go(\'plp\',\''+id+'\');return false">'+esc(N[id].name)+'</a>').join('')+'</div>';
 }
 function chipsHtml(node){
   const kids=node.children||[]; const links=node.chipLinks||[];
@@ -466,6 +501,7 @@ function render(){
   const list=currentProducts();
   const hasChips=(node.children&&node.children.length)||(node.chipLinks&&node.chipLinks.length);
   screen.innerHTML =
+    topnavHtml(node)+
     crumbHtml(node)+
     stripHtml(cols,state.chip!=='all')+
     '<div class="toolbar">'+(hasChips?chipsHtml(node):'')+frowHtml(node,sheet)+'</div>'+
@@ -476,6 +512,7 @@ function render(){
 function renderCollection(){
   const c=COLS[state.colId]; const list=currentProducts();
   screen.innerHTML =
+    topnavHtml(N[c.seed])+
     '<div class="crumb"><a href="#" onclick="go(\'home\');return false">momogo</a> › <span class="here">'+esc(c.name)+'</span></div>'+
     '<div class="banner"><div class="bthumb">'+IC.photo+'</div><div><div class="btag">'+esc(c.tag)+'</div><div class="bname">'+esc(c.name)+'</div><div class="bsub">'+esc(c.sub)+'</div></div></div>'+
     '<div class="toolbar">'+frowHtml({exposed:['Spicy','Vegan']},effSheet(N[c.seed]))+'</div>'+
@@ -488,13 +525,12 @@ function renderHome(){
   screen.innerHTML =
     '<div class="home-search"><svg class="ic sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Search 2,000+ Asian groceries</div>'+
     '<div class="h2">Theme collections</div>'+
-    '<div class="strip" style="max-height:none">'+featured.map(id=>{const c=COLS[id];return '<div class="ccard" onclick="go(\'collection\',\''+id+'\')"><div class="cthumb">'+IC.photo+'</div><div><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag.split(' ')[0].toLowerCase()+'</div></div></div>'}).join('')+'</div>'+
-    '<div class="sec-label strip-label" style="margin-top:8px">increased the category size for now!</div>'+ /*주석*/
-    '<div class="h2" style="margin-top:8px">Categories</div>'+
-    '<div class="mgrid">'+mains.map(id=>{const m=N[id];return '<div class="mcard" onclick="go(\'plp\',\''+id+'\')"><div class="mi">'+m.icon+'</div><div class="mn">'+esc(m.name)+'</div><div class="ms">'+'</div></div>'}).join('')+'</div>'+ 
+    '<div class="tstrip">'+featured.map(id=>{const c=COLS[id];return '<div class="tcard" onclick="go(\'collection\',\''+id+'\')"><div class="tthumb">'+IC.photo+'</div><div class="tb"><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag.split(' ')[0].toLowerCase()+'</div></div></div>'}).join('')+'</div>'+
+    '<div class="h2">Categories</div>'+
+    '<div class="catrow">'+mains.map(id=>{const m=N[id];return '<div class="catcard" onclick="go(\'plp\',\''+id+'\')"><span>'+m.icon+'</span>'+esc(m.name)+'</div>'}).join('')+'</div>'+
     '<div class="h2">Shop by country</div>'+
     '<div class="flagrow">'+['korea','japan','china'].map(id=>{const c=N[id];return '<div class="flag" onclick="go(\'plp\',\''+id+'\')"><span>'+c.flag+'</span>'+c.name+'</div>'}).join('')+'</div>'+
-    '<div class="foot">momogo mobile IA prototype · category structure v1 · sample data</div>';
+    '<div class="foot">momogo mobile IA prototype · v2 · sample data</div>';
 }
 
 /* ============ drawer ============ */
@@ -533,11 +569,12 @@ function renderFilterSheet(){
   if(sheet.diet&&sheet.diet.length)groups.push({label:'Diet / Health',opts:sheet.diet});
   if(sheet.taste&&sheet.taste.length)groups.push({label:'Taste',opts:sheet.taste});
   if(sheet.type)groups.push({label:sheet.type.label,opts:sheet.type.opts});
-  if(sheet.brand&&sheet.brand.length)groups.push({label:'Brand',opts:sheet.brand});
+  if(sheet.brand&&sheet.brand.length)groups.push({label:'Brand',opts:sheet.brand.slice(0,3),more:Math.max(0,sheet.brand.length-3)});
   const cnt=countWith(state.pending);
   fsheet.innerHTML='<div class="grab"></div><div class="shead"><b>Filter</b><button class="iconbtn" onclick="closeAll()" aria-label="Close">'+IC.x+'</button></div>'+
     '<div class="sbody">'+groups.map(g=>'<div class="gname">'+g.label+'</div><div class="gopts">'+
-      g.opts.map(o=>'<button class="opt'+(state.pending.includes(o)?' on':'')+'" onclick="togglePending(\''+o.replace(/'/g,"\\'")+'\')">'+esc(o)+'</button>').join('')+'</div>').join('')+
+      g.opts.map(o=>'<button class="opt'+(state.pending.includes(o)?' on':'')+'" onclick="togglePending(\''+o.replace(/'/g,"\\'")+'\')">'+esc(o)+'</button>').join('')+
+      (g.more?'<button class="opt" style="color:var(--faint);border-style:dashed">+ '+g.more+' more</button>':'')+'</div>').join('')+
     '<div style="height:8px"></div></div>'+
     '<div class="sfoot"><button class="reset" onclick="state.pending=[];renderFilterSheet()">Reset</button>'+
     '<button class="apply" onclick="applyFilters()">Show '+cnt+' products</button></div>';
