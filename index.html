@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>claude — mobile IA prototype - gbOK</title>
+<style>
+:root{
+  --cream:#F2F0E9; --card:#FFFFFF; --ink:#1F2421; --muted:#6B7068; --faint:#9BA097;
+  --line:#E3E0D6; --line2:#CFCBBE;
+  --blue:#1D4ED8; --blue-soft:#DCE7F9; --blue-line:#9DB9EE;
+  --green-soft:#E4F0DC; --green-ink:#3B6D11;
+  --amber-soft:#FAEEDA; --amber-ink:#854F0B;
+  --r:12px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{margin:0; height:100%}
+body{background:#ede8fc; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif; color:var(--ink)}
+#stage{min-height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px 12px}
+#phone{position:relative; width:min(400px,100%); height:min(840px,calc(100dvh - 90px)); background:var(--cream); border-radius:28px; border:1px solid #D6D2C4; box-shadow:0 18px 50px rgba(40,40,30,.14); overflow:hidden; display:flex; flex-direction:column}
+#cap{font-size:12px; color:#8A877B; text-align:center; line-height:1.6; max-width:420px}
+@media (max-width:480px){
+  body{background:var(--cream)}
+  #stage{padding:0}
+  #phone{width:100%; height:100dvh; border-radius:0; border:none; box-shadow:none}
+  #cap{display:none}
+}
+header.bar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:14px 16px 10px; background:var(--cream)}
+.logo{font-size:19px; font-weight:700; letter-spacing:-.02em}
+.logo b{color:var(--blue); font-weight:700}
+.iconbtn{width:36px; height:36px; border:none; background:transparent; border-radius:10px; display:flex; align-items:center; justify-content:center; color:var(--ink); cursor:pointer; padding:0}
+.iconbtn:active{background:rgba(0,0,0,.06)}
+.spacer{flex:1}
+#screen{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:0 14px 28px; position:relative}
+.crumb{font-size:12px; color:var(--faint); padding:6px 2px 12px; display:flex; flex-wrap:wrap; gap:4px}
+.crumb a{color:var(--faint); text-decoration:none}
+.crumb a:active{color:var(--ink)}
+.crumb .here{color:var(--ink)}
+.sec-label{font-size:11px; color:var(--faint); margin:0 0 6px; display:flex; align-items:center; gap:5px}
+.strip{display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:10px; scrollbar-width:none; transition:max-height .25s ease, opacity .25s ease, margin .25s ease; max-height:80px}
+.strip::-webkit-scrollbar{display:none}
+.strip.hidden,.strip-label.hidden{max-height:0; opacity:0; margin:0; overflow:hidden; padding:0}
+.strip-label{transition:max-height .25s ease, opacity .25s ease; max-height:20px; overflow:hidden}
+.ccard{flex:0 0 auto; display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:var(--r); padding:8px 14px 8px 8px; cursor:pointer}
+.ccard:active{background:#FAF8F2}
+.cthumb{width:36px; height:36px; border-radius:9px; background:var(--cream); display:flex; align-items:center; justify-content:center; color:var(--faint); font-size:15px}
+.ccard .nm{font-size:13px; font-weight:600; white-space:nowrap}
+.ccard .tg{font-size:11px; color:var(--faint)}
+.toolbar{position:sticky; top:0; z-index:5; background:var(--cream); padding:6px 0 10px; border-bottom:1px solid var(--line)}
+.chips{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin-bottom:8px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto; font-size:13px; border:none; background:#E9E6DB; color:var(--ink); border-radius:18px; padding:7px 15px; cursor:pointer; white-space:nowrap}
+.chip.on{background:var(--blue-soft); color:var(--blue); font-weight:600}
+.frow{display:flex; gap:6px; align-items:center; overflow-x:auto; scrollbar-width:none}
+.frow::-webkit-scrollbar{display:none}
+.fchip{flex:0 0 auto; font-size:12px; background:var(--card); border:1px solid var(--line2); color:var(--ink); border-radius:16px; padding:6px 12px; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:5px}
+.fchip.btn{border-color:#A8A496; font-weight:600}
+.fchip.act{background:var(--blue-soft); border-color:var(--blue-line); color:var(--blue); font-weight:600}
+.fchip .x{font-size:11px; line-height:1}
+.sortbtn{flex:0 0 auto; margin-left:auto; font-size:12px; color:var(--muted); background:transparent; border:none; padding:6px 2px 6px 8px; cursor:pointer; display:flex; align-items:center; gap:4px; white-space:nowrap}
+.count{font-size:12px; color:var(--muted); margin:12px 0 8px}
+.grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+.pcard{background:var(--card); border:1px solid var(--line); border-radius:var(--r); overflow:hidden}
+.pimg{height:96px; background:#EFEDE4; display:flex; align-items:center; justify-content:center; color:#C2BFB1; font-size:20px}
+.pbody{padding:8px 10px 10px}
+.badge{display:inline-block; font-size:10.5px; border-radius:5px; padding:2px 7px; margin-right:4px}
+.badge.spicy{background:var(--amber-soft); color:var(--amber-ink)}
+.badge.vegan{background:var(--green-soft); color:var(--green-ink)}
+.badge.other{background:#EDEBE2; color:var(--muted)}
+.pname{font-size:12px; margin:6px 0 3px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; min-height:30px; line-height:1.25}
+.pprice{font-size:13.5px; font-weight:600}
+.empty{padding:36px 12px; text-align:center; color:var(--muted); font-size:13px; line-height:1.6}
+.banner{background:var(--blue-soft); border-radius:14px; padding:14px; display:flex; gap:12px; align-items:center; margin-bottom:14px}
+.banner .bthumb{width:54px; height:54px; border-radius:12px; background:var(--card); flex:0 0 auto; display:flex; align-items:center; justify-content:center; color:var(--faint)}
+.banner .btag{font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--blue); font-weight:700}
+.banner .bname{font-size:18px; font-weight:700; color:#163A8F; margin:1px 0}
+.banner .bsub{font-size:12px; color:#3D5FB8}
+.home-search{display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:11px 14px; color:var(--faint); font-size:13.5px; margin:4px 0 18px}
+.h2{font-size:13px; font-weight:700; margin:0 0 8px; color:var(--ink)}
+.mgrid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-bottom:20px}
+.mcard{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:14px 12px; cursor:pointer}
+.mcard:active{background:#FAF8F2}
+.mcard .mi{font-size:18px}
+.mcard .mn{font-size:13.5px; font-weight:600; margin-top:8px}
+.mcard .ms{font-size:11px; color:var(--faint); margin-top:2px}
+.flagrow{display:flex; gap:8px}
+.flag{flex:1; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 8px; text-align:center; font-size:13px; font-weight:600; cursor:pointer}
+.flag:active{background:#FAF8F2}
+.flag span{display:block; font-size:18px; margin-bottom:4px}
+.scrim{position:absolute; inset:0; background:rgba(20,20,16,.42); opacity:0; pointer-events:none; transition:opacity .22s ease; z-index:20}
+.scrim.show{opacity:1; pointer-events:auto}
+.sheet{position:absolute; left:0; right:0; bottom:0; background:var(--card); border-radius:18px 18px 0 0; transform:translateY(105%); transition:transform .26s cubic-bezier(.32,.72,.33,1); z-index:21; max-height:78%; display:flex; flex-direction:column}
+.sheet.show{transform:translateY(0)}
+.sheet .grab{width:36px; height:4px; border-radius:2px; background:var(--line2); margin:9px auto 4px; flex:0 0 auto}
+.sheet .shead{display:flex; align-items:center; justify-content:space-between; padding:6px 18px 10px; flex:0 0 auto}
+.sheet .shead b{font-size:15px; font-weight:700}
+.sbody{overflow-y:auto; padding:0 18px 8px}
+.gname{font-size:11.5px; color:var(--faint); margin:10px 0 7px}
+.gopts{display:flex; flex-wrap:wrap; gap:8px}
+.opt{font-size:13px; border:1px solid var(--line2); background:var(--card); border-radius:18px; padding:7px 15px; cursor:pointer}
+.opt.on{background:var(--blue-soft); border-color:var(--blue-line); color:var(--blue); font-weight:600}
+.sfoot{display:flex; gap:10px; align-items:center; padding:12px 18px calc(14px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); flex:0 0 auto}
+.reset{font-size:13px; color:var(--muted); background:none; border:none; cursor:pointer; padding:8px 6px; white-space:nowrap}
+.apply{flex:1; font-size:14px; font-weight:700; background:var(--blue); color:#fff; border:none; border-radius:12px; padding:13px; cursor:pointer}
+.sortopt{display:flex; justify-content:space-between; align-items:center; padding:13px 4px; font-size:14px; border-bottom:1px solid var(--line); cursor:pointer}
+.sortopt:last-child{border-bottom:none}
+.sortopt .ck{color:var(--blue); font-weight:700}
+.drawer{position:absolute; top:0; bottom:0; left:0; width:82%; max-width:320px; background:var(--card); z-index:22; transform:translateX(-105%); transition:transform .26s cubic-bezier(.32,.72,.33,1); display:flex; flex-direction:column}
+.drawer.show{transform:translateX(0)}
+.drawer .dhead{display:flex; align-items:center; justify-content:space-between; padding:16px 16px 10px}
+.dbody{overflow-y:auto; padding:0 8px 20px}
+.dmain{width:100%; display:flex; align-items:center; gap:10px; background:none; border:none; font-size:14.5px; font-weight:600; color:var(--ink); padding:12px 10px; cursor:pointer; text-align:left}
+.dmain .car{margin-left:auto; color:var(--faint); transition:transform .2s; font-size:12px}
+.dmain.open .car{transform:rotate(90deg)}
+.dsubs{display:none; padding:0 0 6px 38px}
+.dsubs.open{display:block}
+.dsub{display:block; width:100%; text-align:left; background:none; border:none; font-size:13.5px; color:var(--muted); padding:8px 6px; cursor:pointer}
+.dsub:active,.dmain:active{color:var(--blue)}
+.dsect{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--faint); padding:14px 12px 4px}
+svg.ic{width:18px; height:18px; stroke:currentColor; stroke-width:1.8; fill:none; stroke-linecap:round; stroke-linejoin:round; flex:0 0 auto}
+svg.ic.sm{width:14px; height:14px}
+.foot{margin-top:26px; font-size:11px; color:var(--faint); text-align:center; line-height:1.6}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="phone">
+    <header class="bar">
+      <button class="iconbtn" onclick="openDrawer()" aria-label="Menu"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div class="logo" onclick="go('home')" style="cursor:pointer">momogo</div>
+      <div class="spacer"></div>
+      <button class="iconbtn" aria-label="Search"><svg class="ic" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></button>
+      <button class="iconbtn" aria-label="Cart"><svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1.4"/><circle cx="17" cy="20" r="1.4"/><path d="M3 4h2l2.5 11h10L20 8H6.2"/></svg></button>
+    </header>
+    <main id="screen"></main>
+    <div class="scrim" id="scrim" onclick="closeAll()"></div>
+    <div class="drawer" id="drawer"></div>
+    <div class="sheet" id="fsheet"></div>
+    <div class="sheet" id="ssheet"></div>
+  </div>
+  <div id="cap">momogo mobile IA prototype_GB-OK with Claude· v1 · 2026-06 — 메뉴에서 전체 카테고리 탐색 가능 · 칩/필터/정렬/시트 실제 작동 · 제품은 샘플 데이터</div>
+</div>
+
+<script>
+/* ============ icons ============ */
+const IC = {
+  star:'<svg class="ic sm" viewBox="0 0 24 24"><path d="m12 3 2.7 5.7 6.3.8-4.6 4.3 1.2 6.2L12 17l-5.6 3 1.2-6.2L3 9.5l6.3-.8z"/></svg>',
+  filter:'<svg class="ic sm" viewBox="0 0 24 24"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  sort:'<svg class="ic sm" viewBox="0 0 24 24"><path d="M7 4v14m0 0-3-3m3 3 3-3M17 20V6m0 0-3 3m3-3 3 3"/></svg>',
+  photo:'<svg class="ic" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="m5 18 5-5 3 3 3-3 3 3"/></svg>',
+  chev:'<svg class="ic sm" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>',
+  x:'<svg class="ic sm" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>'
+};
+
+/* ============ global filter schema ============ */
+const GROUPS = {
+  diet:  {label:'Diet',  opts:['Vegan','Halal','Gluten free','Sugar free']},
+  taste: {label:'Taste', opts:['Spicy','Mild']},
+  brand: {label:'Brand', opts:[]}
+};
+const SORTS = ['Popularity','Newest','Price: low to high','Price: high to low'];
+
+/* ============ category tree ============ */
+/* node: id,name,parent,children[],chipLinks[],collections[],sheet{diet,taste,type:{label,opts},brand},exposed[],pool[] */
+const N = {};
+function def(n){ n.children=n.children||[]; N[n.id]=n; }
+
+const FOOD_BRANDS=['Samyang','Nongshim','Ottogi','Lotte','Paldo'];
+const DRINK_BRANDS=['Lotte','OKF','Woongjin','CJ','Binggrae'];
+const SNACK_BRANDS=['Orion','Lotte','Haitai','Crown','Glico'];
+
+/* ---- mains ---- */
+def({id:'groceries',name:'Groceries',parent:null,icon:'🍜',
+  collections:[{id:'col-buldak',name:'Buldak',tag:'brand'},{id:'col-kimchi',name:'Kimchi',tag:'trend'},{id:'col-gochujang',name:'Gochujang',tag:'trend'}],
+  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'snacks',name:'Snacks',parent:null,icon:'🍪',
+  collections:[{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-anime',name:'Anime & Sanrio',tag:'collection'}],
+  sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:SNACK_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'drinks',name:'Drinks',parent:null,icon:'🧋',
+  collections:[{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-yuzu',name:'Yuzu',tag:'trend'}],
+  sheet:{diet:['Vegan','Halal','Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free','Vegan']});
+def({id:'mealkits',name:'Meal kits',parent:null,icon:'🥘',
+  sheet:{diet:['Vegan','Halal'],brand:['EasyCookAsia']},exposed:['Vegan','Halal'],sorts:['Popularity','Newest','MD pick']});
+def({id:'snackboxes',name:'Snack boxes & sets',parent:null,icon:'🎁',
+  sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan','Halal']});
+def({id:'home-lifestyle',name:'Home & lifestyle',parent:null,icon:'🏠',
+  sheet:{brand:['Sanrio','Daiso','Kakao Friends']},exposed:[]});
+def({id:'countries',name:'Countries',parent:null,icon:'🌏',sheet:{}});
+
+/* ---- groceries subs ---- */
+def({id:'instant-noodles',name:'Instant noodles',parent:'groceries',
+  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],type:{label:'Type',opts:['Cup','Packet']},brand:FOOD_BRANDS},
+  exposed:['Spicy','Vegan'],
+  pool:[['Samyang Buldak Hot Chicken 140g',1.79,['Spicy'],'Packet','Samyang'],
+        ['Samyang Buldak Carbonara 130g',1.99,['Spicy'],'Packet','Samyang'],
+        ['Samyang Buldak 2x Spicy Cup 70g',1.89,['Spicy'],'Cup','Samyang'],
+        ['Nongshim Shin Ramyun 120g',1.49,['Spicy'],'Packet','Nongshim'],
+        ['Nongshim Shin Cup 68g',1.69,['Spicy'],'Cup','Nongshim'],
+        ['Nongshim Soon Veggie Cup 67g',1.99,['Vegan'],'Cup','Nongshim'],
+        ['Nongshim Chapagetti 140g',1.79,[],'Packet','Nongshim'],
+        ['Ottogi Jin Ramen Mild 120g',1.29,['Mild'],'Packet','Ottogi'],
+        ['Ottogi Jin Ramen Spicy Cup 65g',1.59,['Spicy'],'Cup','Ottogi'],
+        ['Paldo Jjajangmen 203g',2.29,[],'Packet','Paldo'],
+        ['Paldo Bibim Men 130g',1.69,['Spicy','Vegan'],'Packet','Paldo'],
+        ['Nissin Demae Ramen Sesame 100g',1.19,['Halal'],'Packet','Lotte']]});
+def({id:'quickmeals',name:'Quick meals',parent:'groceries',children:['qm-soup','qm-rice'],
+  chipLinks:[{name:'Instant noodles',to:'instant-noodles'}],
+  sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan'],
+  sorts:['Popularity','Newest','MD pick']});
+def({id:'qm-soup',name:'Soup',parent:'quickmeals',pool:[
+  ['Bibigo Beef Doenjang Soup 460g',3.49,[],'','CJ'],
+  ['Ottogi Sundubu Jjigae Cup',2.99,['Spicy'],'','Ottogi'],
+  ['Hikari Instant Miso Soup 8p',4.29,['Vegan'],'','Lotte'],
+  ['Nongshim Yukgaejang Bowl',2.49,['Spicy'],'','Nongshim']]});
+def({id:'qm-rice',name:'Rice dishes',parent:'quickmeals',pool:[
+  ['CJ Hetbahn Instant Rice 210g',2.29,['Vegan','Gluten free'],'','CJ'],
+  ['Ottogi Cup Rice Bibimbap',4.99,[],'','Ottogi'],
+  ['CJ Bibigo Fried Rice Kimchi 400g',5.49,['Spicy'],'','CJ'],
+  ['Ottogi Curry Rice Bowl',3.79,['Mild'],'','Ottogi']]});
+def({id:'rice',name:'Rice',parent:'groceries',children:['rice-raw','rice-instant'],
+  sheet:{diet:['Vegan','Gluten free'],brand:FOOD_BRANDS},exposed:['Vegan']});
+def({id:'rice-raw',name:'Raw rice',parent:'rice'});
+def({id:'rice-instant',name:'Instant rice',parent:'rice'});
+def({id:'noodles',name:'Noodles',parent:'groceries',children:['nd-udon','nd-ramen','nd-soba'],
+  sheet:{diet:['Vegan','Gluten free'],brand:FOOD_BRANDS},exposed:['Vegan'],
+  sorts:['Popularity','Price: low to high','Price: high to low']});
+def({id:'nd-udon',name:'Udon',parent:'noodles'});
+def({id:'nd-ramen',name:'Ramen (fresh)',parent:'noodles'});
+def({id:'nd-soba',name:'Soba',parent:'noodles'});
+def({id:'flour',name:'Flour & dry ingredients',parent:'groceries',children:['fl-mix','fl-top'],
+  sheet:{diet:['Vegan','Gluten free'],brand:FOOD_BRANDS},exposed:['Vegan']});
+def({id:'fl-mix',name:'Flour & baking mix',parent:'flour'});
+def({id:'fl-top',name:'Toppings & dried',parent:'flour'});
+def({id:'sauces',name:'Sauces',parent:'groceries',children:['sc-soy','sc-chili','sc-mayo'],
+  sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'sc-soy',name:'Soy sauce & vinegar',parent:'sauces'});
+def({id:'sc-chili',name:'Chili sauces',parent:'sauces'});
+def({id:'sc-mayo',name:'Mayonnaise & dressing',parent:'sauces'});
+def({id:'oils',name:'Oils & spices',parent:'groceries',sheet:{brand:FOOD_BRANDS},exposed:[]});
+def({id:'preserved',name:'Preserved & fermented',parent:'groceries',children:['pf-pre','pf-fer'],
+  sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan']});
+def({id:'pf-pre',name:'Preserved',parent:'preserved'});
+def({id:'pf-fer',name:'Fermented',parent:'preserved'});
+def({id:'ricecakes',name:'Rice cakes',parent:'groceries',children:['rc-tteok','rc-plain'],
+  sheet:{diet:['Vegan'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'rc-tteok',name:'Tteokbokki',parent:'ricecakes'});
+def({id:'rc-plain',name:'Rice cake',parent:'ricecakes'});
+def({id:'seaweed',name:'Seaweed',parent:'groceries',children:['sw-season','sw-plain'],
+  sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan'],
+  sorts:['Popularity','Price: low to high','Price: high to low']});
+def({id:'sw-season',name:'Seasoned',parent:'seaweed'});
+def({id:'sw-plain',name:'Plain',parent:'seaweed'});
+def({id:'sushi',name:'Sushi ingredients',parent:'groceries',sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan']});
+def({id:'curry',name:'Curry',parent:'groceries',children:['cu-kr','cu-jp','cu-cn'],
+  sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],type:{label:'Form',opts:['Block','Paste','Powder']},brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'cu-kr',name:'Korean curry',parent:'curry'});
+def({id:'cu-jp',name:'Japanese curry',parent:'curry'});
+def({id:'cu-cn',name:'Chinese curry',parent:'curry'});
+
+/* ---- snacks subs ---- */
+def({id:'sn-chips',name:'Chips',parent:'snacks',pool:[
+  ['Orion Turtle Chips Corn Soup',2.79,[],'','Orion'],
+  ['Calbee Honey Butter Chip 60g',2.99,[],'','Haitai'],
+  ['Nongshim Shrimp Crackers 75g',1.99,[],'','Lotte'],
+  ['Orion Pocachip Original 66g',2.19,['Vegan'],'','Orion']]});
+def({id:'sn-savory',name:'Savory snacks',parent:'snacks',children:['sv-sea','sv-cracker','sv-nuts'],
+  sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:SNACK_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'sv-sea',name:'Seaweed snacks',parent:'sn-savory'});
+def({id:'sv-cracker',name:'Rice crackers',parent:'sn-savory'});
+def({id:'sv-nuts',name:'Nuts & seeds',parent:'sn-savory'});
+def({id:'sn-latiao',name:'Latiao',parent:'snacks',
+  sheet:{diet:['Halal'],taste:['Spicy'],brand:['Weilong','KAYU']},exposed:['Spicy']});
+def({id:'sn-sweets',name:'Sweets',parent:'snacks',children:['st-gummy','st-biscuit'],
+  sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan','Halal'],
+  sorts:['Popularity','Newest','Price: low to high','Price: high to low']});
+def({id:'st-gummy',name:'Gummy & candy',parent:'sn-sweets'});
+def({id:'st-biscuit',name:'Biscuit & wafer',parent:'sn-sweets'});
+def({id:'sn-cakes',name:'Cakes',parent:'snacks',children:['ck-baum','ck-dora','ck-pie'],
+  sheet:{brand:SNACK_BRANDS},exposed:[]});
+def({id:'ck-baum',name:'Baumkuchen',parent:'sn-cakes'});
+def({id:'ck-dora',name:'Dorayaki & castella',parent:'sn-cakes'});
+def({id:'ck-pie',name:'Pie & cake bars',parent:'sn-cakes'});
+def({id:'sn-mochi',name:'Mochi',parent:'snacks',sheet:{diet:['Halal'],brand:SNACK_BRANDS},exposed:['Halal']});
+def({id:'sn-choco',name:'Choco',parent:'snacks',sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan']});
+def({id:'sn-konjac',name:'Konjac jelly',parent:'snacks',
+  sheet:{type:{label:'Pack',opts:['Single','Set']},brand:['Jelly.B','Inteak','DR.LIV']},exposed:[],
+  sorts:['Popularity','Newest','MD pick']});
+
+/* ---- drinks subs ---- */
+def({id:'dr-alcohol',name:'Alcohol',parent:'drinks',children:['al-soju','al-beer','al-wine'],
+  collections:[{id:'col-soju',name:'Soju',tag:'trend'}],
+  sheet:{diet:['Sugar free'],brand:['Jinro','Chum Churum','Lotte']},exposed:['Sugar free']});
+def({id:'al-soju',name:'Soju',parent:'dr-alcohol',children:['sj-orig','sj-flav'],
+  sheet:{diet:['Sugar free'],brand:['Jinro','Chum Churum','Good Day']},exposed:['Sugar free'],pool:[
+  ['Jinro Chamisul Fresh 360ml',3.99,[],'Original','Jinro'],
+  ['Jinro Green Grape Soju 360ml',4.29,[],'Flavored','Jinro'],
+  ['Chum Churum Original 360ml',3.89,[],'Original','Chum Churum'],
+  ['Good Day Peach Soju 360ml',4.49,[],'Flavored','Good Day']]});
+def({id:'sj-orig',name:'Original',parent:'al-soju'});
+def({id:'sj-flav',name:'Flavored',parent:'al-soju'});
+def({id:'al-beer',name:'Beer',parent:'dr-alcohol'});
+def({id:'al-wine',name:'Rice wine',parent:'dr-alcohol'});
+def({id:'dr-coffee',name:'Coffee',parent:'drinks',children:['cf-mix','cf-rtd'],
+  sheet:{diet:['Halal','Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free']});
+def({id:'cf-mix',name:'Instant & mix',parent:'dr-coffee'});
+def({id:'cf-rtd',name:'Ready to drink',parent:'dr-coffee'});
+def({id:'dr-tea',name:'Tea',parent:'drinks',children:['te-matcha','te-fruit','te-grain'],
+  sheet:{diet:['Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free']});
+def({id:'te-matcha',name:'Matcha',parent:'dr-tea'});
+def({id:'te-fruit',name:'Fruit tea',parent:'dr-tea'});
+def({id:'te-grain',name:'Grain tea',parent:'dr-tea'});
+def({id:'dr-sparkling',name:'Sparkling',parent:'drinks',
+  sheet:{diet:['Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free'],pool:[
+  ['Milkis Original 250ml',1.29,[],'','Lotte'],
+  ['Chilsung Cider 250ml',1.19,['Vegan'],'','Lotte'],
+  ['Milkis Zero 250ml',1.39,['Sugar free'],'','Lotte'],
+  ['OKF Sparkling Yuzu 350ml',1.79,[],'','OKF']]});
+def({id:'dr-lowcal',name:'Low calorie',parent:'drinks',
+  sheet:{diet:['Vegan','Halal','Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free','Vegan']});
+def({id:'dr-bubble',name:'Bubble tea',parent:'drinks',children:['bt-kit','bt-can'],
+  sheet:{diet:['Vegan','Halal'],brand:DRINK_BRANDS},exposed:['Vegan']});
+def({id:'bt-kit',name:'Kits',parent:'dr-bubble'});
+def({id:'bt-can',name:'Cans',parent:'dr-bubble'});
+def({id:'dr-yuzu',name:'Yuzu',parent:'drinks',sheet:{diet:['Sugar free'],brand:DRINK_BRANDS},exposed:['Sugar free']});
+def({id:'dr-juice',name:'Juice with fruit & jelly',parent:'drinks',sheet:{diet:['Halal'],brand:DRINK_BRANDS},exposed:['Halal']});
+def({id:'dr-pouch',name:'Korean pouch drinks',parent:'drinks',children:['pd-coffee','pd-tea','pd-spark'],
+  sheet:{diet:['Halal'],brand:DRINK_BRANDS},exposed:['Halal']});
+def({id:'pd-coffee',name:'Coffee pouch',parent:'dr-pouch'});
+def({id:'pd-tea',name:'Tea pouch',parent:'dr-pouch'});
+def({id:'pd-spark',name:'Sparkling pouch',parent:'dr-pouch'});
+
+/* ---- meal kits & boxes ---- */
+def({id:'mk-kr',name:'Korean kits',parent:'mealkits'});
+def({id:'mk-cn',name:'Chinese kits',parent:'mealkits'});
+def({id:'mk-jp',name:'Japanese kits',parent:'mealkits'});
+N['mealkits'].children=['mk-kr','mk-cn','mk-jp'];
+def({id:'sb-mixed',name:'Mixed boxes',parent:'snackboxes'});
+def({id:'sb-drink',name:'Drink boxes',parent:'snackboxes'});
+def({id:'sb-snack',name:'Snack boxes',parent:'snackboxes'});
+N['snackboxes'].children=['sb-mixed','sb-drink','sb-snack'];
+
+/* ---- countries ---- */
+const KR_COLS=[{id:'col-kpop',name:'K-Pop',tag:'theme'},{id:'col-buldak',name:'Buldak',tag:'brand'},{id:'col-vegan',name:'Vegan',tag:'theme'},{id:'col-new',name:'New / Trend',tag:'theme'}];
+def({id:'korea',name:'Korea',parent:'countries',flag:'🇰🇷',children:['kr-kimchi','kr-ramyeon','kr-konjac','kr-drinks','kr-sweets'],
+  collections:KR_COLS,sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:['Samyang','Lotte','Nongshim']},exposed:['Spicy','Vegan']});
+def({id:'kr-kimchi',name:'Kimchi',parent:'korea',pool:[
+  ['Jongga Mat Kimchi 500g',6.99,['Vegan'],'','Jongga'],
+  ['Bibigo Sliced Kimchi 500g',7.49,[],'','CJ'],
+  ['Jongga Canned Kimchi 160g',3.29,['Vegan'],'','Jongga'],
+  ['Chongga Radish Kimchi 500g',6.49,['Spicy'],'','Jongga']]});
+def({id:'kr-ramyeon',name:'Ramyeon',parent:'korea'});
+def({id:'kr-konjac',name:'Konjac jelly',parent:'korea'});
+def({id:'kr-drinks',name:'Drinks',parent:'korea'});
+def({id:'kr-sweets',name:'Sweets',parent:'korea'});
+def({id:'japan',name:'Japan',parent:'countries',flag:'🇯🇵',children:['jp-ramen','jp-matcha','jp-mochi','jp-drinks','jp-snacks'],
+  collections:[{id:'col-anime',name:'Anime & Sanrio',tag:'collection'},{id:'col-matcha',name:'Matcha',tag:'trend'},{id:'col-new',name:'New / Trend',tag:'theme'}],
+  sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:['Nissin','Glico','Meiji']},exposed:['Vegan','Spicy']});
+def({id:'jp-ramen',name:'Ramen',parent:'japan'});
+def({id:'jp-matcha',name:'Matcha',parent:'japan'});
+def({id:'jp-mochi',name:'Mochi',parent:'japan'});
+def({id:'jp-drinks',name:'Drinks',parent:'japan'});
+def({id:'jp-snacks',name:'Snacks',parent:'japan'});
+def({id:'china',name:'China',parent:'countries',flag:'🇨🇳',children:['cn-latiao','cn-hotpot','cn-sauces','cn-snacks','cn-drinks'],
+  collections:[{id:'col-latiao',name:'Latiao',tag:'trend'},{id:'col-new',name:'New / Trend',tag:'theme'}],
+  sheet:{diet:['Vegan','Halal'],taste:['Spicy','Mild'],brand:['Weilong','Laoganma','Haidilao']},exposed:['Spicy','Vegan']});
+def({id:'cn-latiao',name:'Latiao',parent:'china'});
+def({id:'cn-hotpot',name:'Hotpot',parent:'china'});
+def({id:'cn-sauces',name:'Sauces',parent:'china'});
+def({id:'cn-snacks',name:'Snacks',parent:'china'});
+def({id:'cn-drinks',name:'Drinks',parent:'china'});
+N['countries'].children=['korea','japan','china'];
+
+/* ---- collections ---- */
+const COLS = {
+  'col-buldak':{name:'Buldak',tag:'Brand collection',sub:'Every Buldak product in one place',seed:'instant-noodles',filter:p=>/buldak/i.test(p.name)},
+  'col-kimchi':{name:'Kimchi',tag:'Trend collection',sub:'Compare every kimchi in one place',seed:'kr-kimchi'},
+  'col-gochujang':{name:'Gochujang',tag:'Trend collection',sub:'Compare every gochujang in one place',seed:'sc-chili'},
+  'col-matcha':{name:'Matcha',tag:'Trend collection',sub:'Matcha across tea, snacks and cakes',seed:'te-matcha'},
+  'col-yuzu':{name:'Yuzu',tag:'Trend collection',sub:'Yuzu drinks, teas and more',seed:'dr-yuzu'},
+  'col-kpop':{name:'K-Pop',tag:'Theme collection',sub:'Idol picks and collab products',seed:'kr-sweets'},
+  'col-vegan':{name:'Vegan',tag:'Theme collection',sub:'Plant-based picks from Korea',seed:'korea'},
+  'col-new':{name:'New / Trend',tag:'Theme collection',sub:'Fresh arrivals and what is trending',seed:'korea'},
+  'col-anime':{name:'Anime & Sanrio',tag:'Collection',sub:'Character snacks and drinks',seed:'sn-sweets'},
+  'col-latiao':{name:'Latiao',tag:'Trend collection',sub:'The spicy strips everyone talks about',seed:'sn-latiao'},
+  'col-soju':{name:'Soju',tag:'Trend collection',sub:'Original and flavored soju',seed:'al-soju'}
+};
+
+/* ============ sample products ============ */
+function rng(seed){let h=1779033703^seed.length;for(let i=0;i<seed.length;i++){h=Math.imul(h^seed.charCodeAt(i),3432918353);h=h<<13|h>>>19}
+  return function(){h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return ((h^=h>>>16)>>>0)/4294967296}}
+const PRODUCTS={};
+function buildProducts(node){
+  if(PRODUCTS[node.id])return PRODUCTS[node.id];
+  let list=[];
+  if(node.pool){ list=node.pool.map(p=>({name:p[0],price:p[1],badges:p[2],type:p[3],brand:p[4]})); }
+  if(node.children.length){ node.children.forEach(c=>{list=list.concat(buildProducts(N[c]))}); }
+  if(!list.length){
+    const r=rng(node.id); const sheet=effSheet(node);
+    const n=6+Math.floor(r()*5);
+    for(let i=1;i<=n;i++){
+      const badges=[];
+      if(sheet.taste&&r()<0.35)badges.push(r()<0.75?'Spicy':'Mild');
+      if(sheet.diet){ if(sheet.diet.includes('Vegan')&&r()<0.3)badges.push('Vegan');
+        if(sheet.diet.includes('Halal')&&r()<0.2)badges.push('Halal');
+        if(sheet.diet.includes('Sugar free')&&r()<0.3)badges.push('Sugar free');
+        if(sheet.diet.includes('Gluten free')&&r()<0.15)badges.push('Gluten free'); }
+      const brands=(sheet.brand&&sheet.brand.length)?sheet.brand:['momogo'];
+      const type=sheet.type?sheet.type.opts[Math.floor(r()*sheet.type.opts.length)]:'';
+      list.push({name:node.name+' sample '+i, price:Math.round((1+r()*7)*10)/10-0.01, badges, type, brand:brands[Math.floor(r()*brands.length)]});
+    }
+  }
+  PRODUCTS[node.id]=list; return list;
+}
+function effSheet(node){ let n=node; while(n && !n.sheet){n=N[n.parent]} return (n&&n.sheet)||{}; }
+function effCollections(node){ let n=node; while(n){ if(n.collections)return n.collections; n=N[n.parent]; } return null; }
+
+/* ============ state & router ============ */
+let state={view:'home',nodeId:null,colId:null,chip:'all',filters:[],sort:'Popularity',pending:[]};
+const screen=document.getElementById('screen');
+
+function go(view,id){ state={view,nodeId:view==='plp'?id:null,colId:view==='collection'?id:null,chip:'all',filters:[],sort:'Popularity',pending:[]};
+  closeAll(); render(); screen.scrollTop=0; }
+function setChip(c){ state.chip=c; render(); }
+function toggleFilter(f){ const i=state.filters.indexOf(f); if(i>-1)state.filters.splice(i,1); else state.filters.push(f); render(); }
+
+function currentProducts(){
+  let base;
+  if(state.view==='collection'){
+    const c=COLS[state.colId]; base=buildProducts(N[c.seed]).slice();
+    if(c.filter)base=base.filter(c.filter);
+    if(!base.length)base=buildProducts(N[c.seed]).slice();
+  } else {
+    const node=N[state.nodeId];
+    base = state.chip!=='all' && N[state.chip] ? buildProducts(N[state.chip]).slice() : buildProducts(node).slice();
+  }
+  state.filters.forEach(f=>{ base=base.filter(p=>p.badges.includes(f)||p.type===f||p.brand===f); });
+  if(state.sort==='Newest')base=base.slice().reverse();
+  if(state.sort==='Price: low to high')base.sort((a,b)=>a.price-b.price);
+  if(state.sort==='Price: high to low')base.sort((a,b)=>b.price-a.price);
+  return base;
+}
+function countWith(filters){
+  let base;
+  if(state.view==='collection'){const c=COLS[state.colId];base=buildProducts(N[c.seed]).slice();if(c.filter)base=base.filter(c.filter);if(!base.length)base=buildProducts(N[c.seed]).slice();}
+  else{const node=N[state.nodeId];base=state.chip!=='all'&&N[state.chip]?buildProducts(N[state.chip]).slice():buildProducts(node).slice();}
+  filters.forEach(f=>{base=base.filter(p=>p.badges.includes(f)||p.type===f||p.brand===f)});
+  return base.length;
+}
+
+/* ============ renderers ============ */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function price(p){return '€'+p.toFixed(2).replace('.',',')}
+function badgeHtml(b){const cls=b==='Spicy'?'spicy':(b==='Vegan'?'vegan':'other');return '<span class="badge '+cls+'">'+b+'</span>'}
+function gridHtml(list){
+  if(!list.length)return '<div class="empty">No products match these filters.<br>Try removing a filter to see more.</div>';
+  return '<div class="grid">'+list.map(p=>'<div class="pcard"><div class="pimg">'+IC.photo+'</div><div class="pbody">'+
+    (p.badges.slice(0,2).map(badgeHtml).join('')||'<span class="badge other" style="visibility:hidden">.</span>')+
+    '<div class="pname">'+esc(p.name)+'</div><div class="pprice">'+price(p.price)+'</div></div></div>').join('')+'</div>';
+}
+function crumbHtml(node){
+  const chain=[]; let n=node; while(n){chain.unshift(n); n=N[n.parent];}
+  let h='<a href="#" onclick="go(\'home\');return false">momogo</a>';
+  chain.forEach((c,i)=>{ h+=' › '+(i===chain.length-1?'<span class="here">'+esc(c.name)+'</span>':'<a href="#" onclick="go(\'plp\',\''+c.id+'\');return false">'+esc(c.name)+'</a>'); });
+  return '<div class="crumb">'+h+'</div>';
+}
+function stripHtml(cols,hidden){
+  if(!cols)return '';
+  return '<div class="sec-label strip-label'+(hidden?' hidden':'')+'">'+IC.star+' Collections</div>'+
+  '<div class="strip'+(hidden?' hidden':'')+'">'+cols.map(c=>'<div class="ccard" onclick="go(\'collection\',\''+c.id+'\')"><div class="cthumb">'+IC.photo+'</div><div><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag+'</div></div></div>').join('')+'</div>';
+}
+function frowHtml(node,sheet){
+  const exposed=(node.exposed||[]).filter(f=>!state.filters.includes(f));
+  let h='<div class="frow"><button class="fchip btn" onclick="openFilter()">'+IC.filter+' Filter'+(state.filters.length?' · '+state.filters.length:'')+'</button>';
+  state.filters.forEach(f=>{h+='<button class="fchip act" onclick="toggleFilter(\''+f+'\')">'+esc(f)+' <span class="x">✕</span></button>'});
+  exposed.forEach(f=>{h+='<button class="fchip" onclick="toggleFilter(\''+f+'\')">'+esc(f)+'</button>'});
+  h+='<button class="sortbtn" onclick="openSort()">'+IC.sort+' '+state.sort.split(':')[0]+'</button></div>';
+  return h;
+}
+function chipsHtml(node){
+  const kids=node.children||[]; const links=node.chipLinks||[];
+  if(!kids.length&&!links.length)return '';
+  let h='<div class="chips"><button class="chip'+(state.chip==='all'?' on':'')+'" onclick="setChip(\'all\')">All</button>';
+  links.forEach(l=>{h+='<button class="chip" onclick="go(\'plp\',\''+l.to+'\')">'+esc(l.name)+'</button>'});
+  kids.forEach(k=>{h+='<button class="chip'+(state.chip===k?' on':'')+'" onclick="setChip(\''+k+'\')">'+esc(N[k].name)+'</button>'});
+  return h+'</div>';
+}
+
+function render(){
+  if(state.view==='home')return renderHome();
+  if(state.view==='collection')return renderCollection();
+  const node=N[state.nodeId]; const sheet=effSheet(node);
+  const cols=effCollections(node);
+  const list=currentProducts();
+  const hasChips=(node.children&&node.children.length)||(node.chipLinks&&node.chipLinks.length);
+  screen.innerHTML =
+    crumbHtml(node)+
+    stripHtml(cols,state.chip!=='all')+
+    '<div class="toolbar">'+(hasChips?chipsHtml(node):'')+frowHtml(node,sheet)+'</div>'+
+    '<div class="count">'+list.length+' products</div>'+
+    gridHtml(list)+
+    '<div class="foot">momogo IA prototype · template: '+(hasChips?'category':'leaf')+'</div>';
+}
+function renderCollection(){
+  const c=COLS[state.colId]; const list=currentProducts();
+  screen.innerHTML =
+    '<div class="crumb"><a href="#" onclick="go(\'home\');return false">momogo</a> › <span class="here">'+esc(c.name)+'</span></div>'+
+    '<div class="banner"><div class="bthumb">'+IC.photo+'</div><div><div class="btag">'+esc(c.tag)+'</div><div class="bname">'+esc(c.name)+'</div><div class="bsub">'+esc(c.sub)+'</div></div></div>'+
+    '<div class="toolbar">'+frowHtml({exposed:['Spicy','Vegan']},effSheet(N[c.seed]))+'</div>'+
+    '<div class="count">'+list.length+' products</div>'+gridHtml(list)+
+    '<div class="foot">momogo IA prototype · template: collection</div>';
+}
+function renderHome(){
+  const mains=['groceries','snacks','drinks','mealkits','snackboxes','home-lifestyle'];
+  const featured=['col-kpop','col-buldak','col-matcha','col-new'];
+  screen.innerHTML =
+    '<div class="home-search"><svg class="ic sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Search 2,000+ Asian groceries</div>'+
+    '<div class="h2">Theme collections</div>'+
+    '<div class="strip" style="max-height:none">'+featured.map(id=>{const c=COLS[id];return '<div class="ccard" onclick="go(\'collection\',\''+id+'\')"><div class="cthumb">'+IC.photo+'</div><div><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag.split(' ')[0].toLowerCase()+'</div></div></div>'}).join('')+'</div>'+
+    '<div class="h2" style="margin-top:8px">Categories</div>'+
+    '<div class="mgrid">'+mains.map(id=>{const m=N[id];return '<div class="mcard" onclick="go(\'plp\',\''+id+'\')"><div class="mi">'+m.icon+'</div><div class="mn">'+esc(m.name)+'</div><div class="ms">'+'</div></div>'}).join('')+'</div>'+ 
+    '<div class="h2">Shop by country</div>'+
+    '<div class="flagrow">'+['korea','japan','china'].map(id=>{const c=N[id];return '<div class="flag" onclick="go(\'plp\',\''+id+'\')"><span>'+c.flag+'</span>'+c.name+'</div>'}).join('')+'</div>'+
+    '<div class="foot">momogo mobile IA prototype · category structure v1 · sample data</div>';
+}
+
+/* ============ drawer ============ */
+const drawer=document.getElementById('drawer');
+function openDrawer(){
+  const mains=['groceries','snacks','drinks','mealkits','snackboxes','home-lifestyle'];
+  let h='<div class="dhead"><div class="logo">momo<b>go</b></div><button class="iconbtn" onclick="closeAll()" aria-label="Close">'+IC.x+'</button></div><div class="dbody">';
+  h+='<div class="dsect">Categories</div>';
+  mains.forEach(id=>{const m=N[id];
+    h+='<button class="dmain" onclick="toggleSub(this,\''+id+'\')"><span>'+m.icon+'</span>'+esc(m.name)+(m.children.length?'<span class="car">›</span>':'')+'</button>';
+    if(m.children.length){h+='<div class="dsubs" id="sub-'+id+'"><button class="dsub" onclick="go(\'plp\',\''+id+'\')">All '+esc(m.name.toLowerCase())+'</button>'+
+      m.children.map(c=>'<button class="dsub" onclick="go(\'plp\',\''+c+'\')">'+esc(N[c].name)+'</button>').join('')+'</div>';}
+  });
+  h+='<div class="dsect">Countries</div>';
+  ['korea','japan','china'].forEach(id=>{const c=N[id];
+    h+='<button class="dmain" onclick="toggleSub(this,\''+id+'\')"><span>'+c.flag+'</span>'+esc(c.name)+'<span class="car">›</span></button>'+
+    '<div class="dsubs" id="sub-'+id+'"><button class="dsub" onclick="go(\'plp\',\''+id+'\')">All '+esc(c.name)+'</button>'+
+    c.children.map(k=>'<button class="dsub" onclick="go(\'plp\',\''+k+'\')">'+esc(N[k].name)+'</button>').join('')+'</div>';
+  });
+  h+='<div class="dsect">Collections</div>';
+  Object.keys(COLS).forEach(id=>{h+='<button class="dmain" style="font-weight:400;font-size:13.5px" onclick="go(\'collection\',\''+id+'\')"><span style="color:var(--faint)">'+IC.star+'</span>'+esc(COLS[id].name)+'</button>'});
+  h+='</div>';
+  drawer.innerHTML=h; drawer.classList.add('show'); scrim.classList.add('show');
+}
+function toggleSub(btn,id){const s=document.getElementById('sub-'+id); if(!s){go('plp',id);return;} s.classList.toggle('open'); btn.classList.toggle('open');}
+
+/* ============ filter sheet ============ */
+const fsheet=document.getElementById('fsheet'), ssheet=document.getElementById('ssheet'), scrim=document.getElementById('scrim');
+function openFilter(){
+  state.pending=state.filters.slice();
+  renderFilterSheet(); fsheet.classList.add('show'); scrim.classList.add('show');
+}
+function renderFilterSheet(){
+  const sheet = state.view==='collection' ? effSheet(N[COLS[state.colId].seed]) : effSheet(state.chip!=='all'&&N[state.chip]?N[state.chip]:N[state.nodeId]);
+  const groups=[];
+  if(sheet.diet&&sheet.diet.length)groups.push({label:'Diet',opts:sheet.diet});
+  if(sheet.taste&&sheet.taste.length)groups.push({label:'Taste',opts:sheet.taste});
+  if(sheet.type)groups.push({label:sheet.type.label,opts:sheet.type.opts});
+  if(sheet.brand&&sheet.brand.length)groups.push({label:'Brand',opts:sheet.brand});
+  const cnt=countWith(state.pending);
+  fsheet.innerHTML='<div class="grab"></div><div class="shead"><b>Filter</b><button class="iconbtn" onclick="closeAll()" aria-label="Close">'+IC.x+'</button></div>'+
+    '<div class="sbody">'+groups.map(g=>'<div class="gname">'+g.label+'</div><div class="gopts">'+
+      g.opts.map(o=>'<button class="opt'+(state.pending.includes(o)?' on':'')+'" onclick="togglePending(\''+o.replace(/'/g,"\\'")+'\')">'+esc(o)+'</button>').join('')+'</div>').join('')+
+    '<div style="height:8px"></div></div>'+
+    '<div class="sfoot"><button class="reset" onclick="state.pending=[];renderFilterSheet()">Reset</button>'+
+    '<button class="apply" onclick="applyFilters()">Show '+cnt+' products</button></div>';
+}
+function togglePending(o){const i=state.pending.indexOf(o); if(i>-1)state.pending.splice(i,1); else state.pending.push(o); renderFilterSheet();}
+function applyFilters(){state.filters=state.pending.slice(); closeAll(); render();}
+
+/* ============ sort sheet ============ */
+function openSort(){
+  const node=state.view==='collection'?null:N[state.nodeId];
+  const opts=(node&&node.sorts)||SORTS;
+  ssheet.innerHTML='<div class="grab"></div><div class="shead"><b>Sort by</b><button class="iconbtn" onclick="closeAll()" aria-label="Close">'+IC.x+'</button></div>'+
+  '<div class="sbody" style="padding-bottom:calc(18px + env(safe-area-inset-bottom))">'+opts.map(o=>'<div class="sortopt" onclick="setSort(\''+o.replace(/'/g,"\\'")+'\')">'+esc(o)+(state.sort===o?'<span class="ck">✓</span>':'')+'</div>').join('')+'</div>';
+  ssheet.classList.add('show'); scrim.classList.add('show');
+}
+function setSort(o){state.sort=o; closeAll(); render();}
+
+function closeAll(){drawer.classList.remove('show'); fsheet.classList.remove('show'); ssheet.classList.remove('show'); scrim.classList.remove('show');}
+
+render();
+</script>
+</body>
+</html>
