@@ -464,8 +464,7 @@ function crumbHtml(node){
 }
 function stripHtml(cols,hidden){
   if(!cols)return '';
-  return '<div class="sec-label strip-label'+(hidden?' hidden':'')+'">'+' Featured Collections</div>'+
-  '<div class="strip'+(hidden?' hidden':'')+'">'+cols.map(c=>'<div class="ccard" onclick="go(\'collection\',\''+c.id+'\')"><div class="cthumb">'+IC.photo+'</div><div><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag+'</div></div></div>').join('')+'</div>';
+  return '<div class="strip'+(hidden?' hidden':'')+'" style="padding-top:4px">'+cols.map(c=>'<div class="ccard" onclick="go(\'collection\',\''+c.id+'\')"><div class="cthumb">'+IC.photo+'</div><div><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag+'</div></div></div>').join('')+'</div>';
 }
 function frowHtml(node,sheet){
   const exposed=(node.exposed||[]).filter(f=>!state.filters.includes(f));
@@ -502,8 +501,7 @@ function render(){
   const hasChips=(node.children&&node.children.length)||(node.chipLinks&&node.chipLinks.length);
   screen.innerHTML =
     topnavHtml(node)+
-    crumbHtml(node)+
-    stripHtml(cols,state.chip!=='all')+
+    stripHtml(cols)+
     '<div class="toolbar">'+(hasChips?chipsHtml(node):'')+frowHtml(node,sheet)+'</div>'+
     '<div class="count">'+list.length+' products</div>'+
     gridHtml(list)+
@@ -513,7 +511,7 @@ function renderCollection(){
   const c=COLS[state.colId]; const list=currentProducts();
   screen.innerHTML =
     topnavHtml(N[c.seed])+
-    '<div class="crumb"><a href="#" onclick="go(\'home\');return false">momogo</a> › <span class="here">'+esc(c.name)+'</span></div>'+
+    '<div style="height:8px"></div>'+
     '<div class="banner"><div class="bthumb">'+IC.photo+'</div><div><div class="btag">'+esc(c.tag)+'</div><div class="bname">'+esc(c.name)+'</div><div class="bsub">'+esc(c.sub)+'</div></div></div>'+
     '<div class="toolbar">'+frowHtml({exposed:['Spicy','Vegan']},effSheet(N[c.seed]))+'</div>'+
     '<div class="count">'+list.length+' products</div>'+gridHtml(list)+
