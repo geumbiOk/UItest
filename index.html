@@ -32,7 +32,7 @@ header.bar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:14
 .iconbtn:active{background:rgba(0,0,0,.06)}
 .spacer{flex:1}
 #screen{flex:1; overflow-y:auto; overscroll-behavior:contain; padding:0 14px 28px; position:relative}
-.crumb{font-size:12px; color:var(--faint); padding:6px 2px 12px; display:flex; flex-wrap:wrap; gap:4px}
+.crumb{font-size:12px; color:var(--faint); padding:6px 2px 8px; display:flex; flex-wrap:wrap; gap:4px}
 .crumb a{color:var(--faint); text-decoration:none}
 .crumb a:active{color:var(--ink)}
 .crumb .here{color:var(--ink)}
@@ -49,7 +49,26 @@ header.bar{flex:0 0 auto; display:flex; align-items:center; gap:10px; padding:14
 .toolbar{position:sticky; top:0; z-index:5; background:var(--cream); padding:6px 0 10px; border-bottom:1px solid var(--line)}
 .chips{display:flex; gap:6px; overflow-x:auto; scrollbar-width:none; margin-bottom:8px}
 .chips::-webkit-scrollbar{display:none}
+.herorow{display:flex; gap:10px; overflow-x:auto; scrollbar-width:none; scroll-snap-type:x mandatory; margin-bottom:8px}
+.herorow::-webkit-scrollbar{display:none}
+.hero{flex:0 0 88%; scroll-snap-align:center; border-radius:16px; padding:18px; display:flex; align-items:center; justify-content:space-between; min-height:120px}
+.hero .ht{font-size:18px; font-weight:700}
+.hero .hs{font-size:13px; opacity:.85; margin-top:3px}
+.hero .himg{width:64px; height:64px; border-radius:12px; background:rgba(255,255,255,.5); display:flex; align-items:center; justify-content:center; color:var(--faint)}
+.herodots{display:flex; gap:5px; justify-content:center; margin-bottom:18px}
+.herodots .dot{width:6px; height:6px; border-radius:3px; background:var(--line2)}
+.herodots .dot.on{background:var(--muted); width:16px}
+.pgtitle{display:flex; align-items:baseline; justify-content:space-between; gap:10px; margin:2px 0 12px}
+.pgtitle h1{font-size:22px; font-weight:700; margin:0; letter-spacing:-.01em}
+.pgcount{font-size:12px; color:var(--faint); flex:0 0 auto}
+.tabs{display:flex; gap:18px; overflow-x:auto; scrollbar-width:none; border-bottom:1px solid var(--line); margin-bottom:10px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto; background:none; border:none; padding:4px 0 9px; font-size:14px; color:var(--muted); cursor:pointer; white-space:nowrap; position:relative; font-weight:500}
+.tab.on{color:var(--ink); font-weight:700}
+.tab.on::after{content:''; position:absolute; left:0; right:0; bottom:-1px; height:2px; background:var(--ink); border-radius:2px}
 .chip{flex:0 0 auto; font-size:13px; border:none; background:#E9E6DB; color:var(--ink); border-radius:18px; padding:7px 15px; cursor:pointer; white-space:nowrap}
+.chip.sm{font-size:12px; padding:5px 12px; background:transparent; border:1px solid var(--line2)}
+.chip.sm.on{background:var(--blue-soft); border-color:var(--blue-line)}
 .chip.on{background:var(--blue-soft); color:var(--blue); font-weight:600}
 .frow{display:flex; gap:6px; align-items:center; overflow-x:auto; scrollbar-width:none}
 .frow::-webkit-scrollbar{display:none}
@@ -157,7 +176,7 @@ svg.ic.sm{width:14px; height:14px}
     <div class="sheet" id="fsheet"></div>
     <div class="sheet" id="ssheet"></div>
   </div>
-  <div id="cap">momogo(mobile) prototype · v2 — 카테고리 탐색/필터/정렬 확인용 · 제품은 샘플 데이터</div>
+  <div id="cap">momogo(mobile) prototype · v3 — 카테고리 탐색/필터/정렬 확인용 · 제품은 샘플 데이터</div>
 </div>
 
 <script>
@@ -177,7 +196,7 @@ const GROUPS = {
   taste: {label:'Taste', opts:['Spicy','Mild']},
   brand: {label:'Brand', opts:[]}
 };
-const SORTS = ['Popularity','Newest','Price: low to high','Price: high to low'];
+const SORTS = ['momogo pick','Popularity','Newest','Price: low to high','Price: high to low'];
 
 /* ============ category tree ============ */
 const N = {};
@@ -204,7 +223,7 @@ def({id:'drinks',name:'Drinks',parent:null,icon:'🧋',
   sheet:{diet:['Vegan','Halal','Sugar free','Zero'],brand:DRINK_BRANDS},exposed:['Sugar free','Vegan']});
 
 def({id:'mealkits',name:'Meal kits',parent:null,icon:'🥘',
-  sheet:{diet:['Vegan','Halal'],brand:['EasyCookAsia']},exposed:['Vegan','Halal'],sorts:['Popularity','Newest','MD pick']});
+  sheet:{diet:['Vegan','Halal'],brand:['EasyCookAsia']},exposed:['Vegan','Halal'],sorts:['momogo pick','Popularity','Newest']});
 def({id:'snackboxes',name:'Snack boxes & sets',parent:null,icon:'🎁',
   sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan','Halal']});
 def({id:'home-lifestyle',name:'Home & lifestyle',parent:null,icon:'🏠',
@@ -212,7 +231,7 @@ def({id:'home-lifestyle',name:'Home & lifestyle',parent:null,icon:'🏠',
 def({id:'countries',name:'Countries',parent:null,icon:'🌏',sheet:{}});
 
 /* ---- [1] Groceries 세부 서브카테고리 개편 ---- */
-def({id:'instant-noodles',name:'Instant noodles',parent:'quickmeals',
+def({id:'instant-noodles',name:'Instant noodles',parent:'groceries',
   sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],type:{label:'Type',opts:['Cup','Packet']},brand:FOOD_BRANDS},
   exposed:['Spicy','Vegan'],
   pool:[['Samyang Buldak Hot Chicken 140g',1.79,['Spicy'],'Packet','Samyang'],
@@ -223,9 +242,10 @@ def({id:'instant-noodles',name:'Instant noodles',parent:'quickmeals',
         ['Nongshim Soon Veggie Cup 67g',1.99,['Vegan'],'Cup','Nongshim'],
         ['Ottogi Jin Ramen Mild 120g',1.29,['Mild'],'Packet','Ottogi']]});
 
-def({id:'quickmeals',name:'Quick meals (Schnelle Küche)',parent:'groceries',children:['instant-noodles','qm-soup','qm-rice'],
+def({id:'quickmeals',name:'Quick meals',parent:'groceries',children:['qm-soup','qm-rice'],
+  chipLinks:[{name:'Instant noodles',to:'instant-noodles'}],
   sheet:{diet:['Vegan','Halal','Gluten free'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Vegan','Halal'],
-  sorts:['Popularity','Newest','MD pick']});
+  sorts:['momogo pick','Popularity','Newest']});
 def({id:'qm-soup',name:'Soup',parent:'quickmeals',pool:[
   ['Bibigo Beef Doenjang Soup 460g',3.49,[],'','CJ'],
   ['Ottogi Sundubu Jjigae Cup',2.99,['Spicy'],'','Ottogi']]});
@@ -233,12 +253,12 @@ def({id:'qm-rice',name:'Rice dishes',parent:'quickmeals',pool:[
   ['Ottogi Cup Rice Bibimbap',4.99,[],'','Ottogi'],
   ['CJ Bibigo Fried Rice Kimchi 400g',5.49,['Spicy'],'','CJ']]});
 
-def({id:'rice',name:'Rice (Reis)',parent:'groceries',children:['rice-raw','rice-instant'],
+def({id:'rice',name:'Rice',parent:'groceries',children:['rice-raw','rice-instant'],
   sheet:{diet:['Vegan','Gluten free'],brand:FOOD_BRANDS},exposed:['Vegan']});
 def({id:'rice-raw',name:'Raw rice',parent:'rice'});
 def({id:'rice-instant',name:'Instant rice',parent:'rice',pool:[['CJ Hetbahn Instant Rice 210g',2.29,['Vegan','Gluten free'],'','CJ']]});
 
-def({id:'noodles',name:'Noodles (Nudeln)',parent:'groceries',children:['nd-udon','nd-ramen','nd-soba','nd-etc'],
+def({id:'noodles',name:'Noodles',parent:'groceries',children:['nd-udon','nd-ramen','nd-soba','nd-etc'],
   sheet:{diet:['Vegan','Gluten free'],brand:FOOD_BRANDS},exposed:['Vegan'],
   sorts:['Popularity','Price: low to high','Price: high to low']});
 def({id:'nd-udon',name:'Udon',parent:'noodles'});
@@ -266,11 +286,11 @@ def({id:'pf-kimchi',name:'Kimchi',parent:'preserved'});
 def({id:'pf-gochujang',name:'Gochujang',parent:'preserved'});
 def({id:'pf-dips',name:'Dips',parent:'preserved'});
 
-def({id:'ricecakes',name:'Rice cakes (Reiskuchen)',parent:'groceries',children:['rc-tteok','rc-plain'],sheet:{diet:['Vegan'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
+def({id:'ricecakes',name:'Rice cakes',parent:'groceries',children:['rc-tteok','rc-plain'],sheet:{diet:['Vegan'],taste:['Spicy','Mild'],brand:FOOD_BRANDS},exposed:['Spicy','Vegan']});
 def({id:'rc-tteok',name:'Tteokbokki',parent:'ricecakes'});
 def({id:'rc-plain',name:'Rice cake plain',parent:'ricecakes'});
 
-def({id:'seaweed',name:'Seaweed (Seetang)',parent:'groceries',children:['sw-season','sw-plain'],sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan'],sorts:['Popularity','Price: low to high']});
+def({id:'seaweed',name:'Seaweed',parent:'groceries',children:['sw-season','sw-plain'],sheet:{diet:['Vegan'],brand:FOOD_BRANDS},exposed:['Vegan'],sorts:['Popularity','Price: low to high']});
 def({id:'sw-season',name:'Seasoned',parent:'seaweed'});
 def({id:'sw-plain',name:'Plain',parent:'seaweed'});
 
@@ -311,7 +331,7 @@ def({id:'sn-mochi',name:'Mochi',parent:'snacks',sheet:{diet:['Halal'],brand:SNAC
 def({id:'sn-choco',name:'Chocolate-Primary (Choco)',parent:'snacks',sheet:{diet:['Vegan','Halal'],brand:SNACK_BRANDS},exposed:['Vegan']});
 
 def({id:'sn-konjac',name:'Konjac jelly',parent:'snacks',
-  sheet:{type:{label:'Pack Type',opts:['Single','Sets']},brand:['Jelly.B','Inteak']},exposed:[],sorts:['Popularity','Newest','MD pick']});
+  sheet:{type:{label:'Pack Type',opts:['Single','Sets']},brand:['Jelly.B','Inteak']},exposed:[],sorts:['momogo pick','Popularity','Newest']});
 
 
 /* ---- [3] Drinks 세부 서브카테고리 개편 ---- */
@@ -475,9 +495,6 @@ function frowHtml(node,sheet){
   let h='<div class="frow"><button class="fchip btn" onclick="openFilter()">'+IC.filter+' Filter'+(state.filters.length?' · '+state.filters.length:'')+'</button>';
   state.filters.forEach(f=>{h+='<button class="fchip act" onclick="toggleFilter(\''+f+'\')">'+esc(f)+' <span class="x">✕</span></button>'});
   exposed.forEach(f=>{h+='<button class="fchip" onclick="toggleFilter(\''+f+'\')">'+esc(f)+'</button>'});
-  if(sheet&&sheet.type&&!state.filters.some(f=>sheet.type.opts.includes(f))){
-    h+='<button class="fchip" onclick="openFilter()">'+esc(sheet.type.label)+' ▾</button>';
-  }
   h+='<button class="sortbtn" onclick="openSort()">'+IC.sort+' '+state.sort.split(':')[0]+'</button></div>';
   return h;
 }
@@ -487,13 +504,31 @@ function topnavHtml(node){
   const cur=r?r.id:null;
   return '<div class="topnav">'+roots.map(id=>'<a href="#" class="'+(id===cur?'cur':'')+'" onclick="go(\'plp\',\''+id+'\');return false">'+esc(N[id].name)+'</a>').join('')+'</div>';
 }
+function sn(s){return s.replace(/\s*\(.*?\)/,'');}
 function chipsHtml(node){
-  const kids=node.children||[]; const links=node.chipLinks||[];
-  if(!kids.length&&!links.length)return '';
-  let h='<div class="chips"><button class="chip'+(state.chip==='all'?' on':'')+'" onclick="setChip(\'all\')">All</button>';
-  links.forEach(l=>{h+='<button class="chip" onclick="go(\'plp\',\''+l.to+'\')">'+esc(l.name)+'</button>'});
-  kids.forEach(k=>{h+='<button class="chip'+(state.chip===k?' on':'')+'" onclick="setChip(\''+k+'\')">'+esc(N[k].name)+'</button>'});
-  return h+'</div>';
+  let h='';
+  const par=node.parent?N[node.parent]:null;
+  if(par){
+    /* row 1: siblings — navigate as underline tabs, current page active */
+    h+='<div class="tabs"><button class="tab" onclick="go(\'plp\',\''+par.id+'\')">All</button>';
+    (par.children||[]).forEach(k=>{h+='<button class="tab'+(k===node.id?' on':'')+'" onclick="go(\'plp\',\''+k+'\')">'+esc(sn(N[k].name))+'</button>'});
+    (par.chipLinks||[]).forEach(lk=>{h+='<button class="tab'+(lk.to===node.id?' on':'')+'" onclick="go(\'plp\',\''+lk.to+'\')">'+esc(lk.name)+'</button>'});
+    h+='</div>';
+    /* row 2: own children + chip links — filter in place / navigate */
+    if((node.children&&node.children.length)||(node.chipLinks&&node.chipLinks.length)){
+      h+='<div class="chips"><button class="chip sm'+(state.chip==='all'?' on':'')+'" onclick="setChip(\'all\')">All</button>';
+      (node.chipLinks||[]).forEach(lk=>{h+='<button class="chip sm" onclick="go(\'plp\',\''+lk.to+'\')">'+esc(lk.name)+'</button>'});
+      node.children.forEach(k=>{h+='<button class="chip sm'+(state.chip===k?' on':'')+'" onclick="setChip(\''+k+'\')">'+esc(sn(N[k].name))+'</button>'});
+      h+='</div>';
+    }
+  } else if(node.children&&node.children.length){
+    /* main category: children as underline tabs — navigate */
+    h+='<div class="tabs"><button class="tab on">All</button>';
+    node.children.forEach(k=>{h+='<button class="tab" onclick="go(\'plp\',\''+k+'\')">'+esc(sn(N[k].name))+'</button>'});
+    (node.chipLinks||[]).forEach(lk=>{h+='<button class="tab" onclick="go(\'plp\',\''+lk.to+'\')">'+esc(lk.name)+'</button>'});
+    h+='</div>';
+  }
+  return h;
 }
 
 function render(){
@@ -502,20 +537,33 @@ function render(){
   const node=N[state.nodeId]; const sheet=effSheet(node);
   const cols=effCollections(node);
   const list=currentProducts();
-  const hasChips=(node.children&&node.children.length)||(node.chipLinks&&node.chipLinks.length);
+  const hasChips=!!node.parent||(node.children&&node.children.length);
   screen.innerHTML =
     topnavHtml(node)+
     stripHtml(cols)+
+    crumbHtml(node)+
+     '<div class="pgtitle"><h1>'+esc(node.name)+'</h1><span class="pgcount">'+list.length+' products</span></div>'+
     '<div class="toolbar">'+(hasChips?chipsHtml(node):'')+frowHtml(node,sheet)+'</div>'+
-    '<div class="count">'+list.length+' products</div>'+
     gridHtml(list)+
-    '<div class="foot">momogo IA prototype · template: '+(hasChips?'category':'leaf')+'</div>';
+    '<div class="foot">momogo IA prototype · template: '+(node.children&&node.children.length?'category':'leaf')+'</div>';
+  scrollChipIntoView();
+}
+function scrollChipIntoView(){
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('#screen .chips, #screen .tabs').forEach(row=>{
+      const on=row.querySelector('.chip.on, .tab.on');
+      if(on && on.offsetParent!==null){
+        const target=on.offsetLeft-row.clientWidth/2+on.offsetWidth/2;
+        row.scrollTo({left:Math.max(0,target),behavior:'auto'});
+      }
+    });
+  });
 }
 function renderCollection(){
   const c=COLS[state.colId]; const list=currentProducts();
   screen.innerHTML =
     topnavHtml(N[c.seed])+
-    '<div style="height:8px"></div>'+
+    '<div class="crumb"><a href="#" onclick="go(\'home\');return false">momogo</a> › <span class="here">'+esc(c.name)+'</span></div>'+
     '<div class="banner"><div class="bthumb">'+IC.photo+'</div><div><div class="btag">'+esc(c.tag)+'</div><div class="bname">'+esc(c.name)+'</div><div class="bsub">'+esc(c.sub)+'</div></div></div>'+
     '<div class="toolbar">'+frowHtml({exposed:['Spicy','Vegan']},effSheet(N[c.seed]))+'</div>'+
     '<div class="count">'+list.length+' products</div>'+gridHtml(list)+
@@ -524,15 +572,18 @@ function renderCollection(){
 function renderHome(){
   const mains=['groceries','snacks','drinks','mealkits','snackboxes','home-lifestyle'];
   const featured=['col-kpop','col-buldak','col-matcha','col-new'];
+  const promos=[{t:'Summer K-Drinks',s:'Up to 30% off',c:'#DCE7F9',cc:'#1D4ED8'},{t:'New: Buldak Carbonara',s:'Just landed',c:'#FAEEDA',cc:'#854F0B'},{t:'Vegan Picks',s:'Curated for you',c:'#E4F0DC',cc:'#3B6D11'}];
   screen.innerHTML =
     '<div class="home-search"><svg class="ic sm" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg> Search 2,000+ Asian groceries</div>'+
+    '<div class="herorow">'+promos.map((p,i)=>'<div class="hero" style="background:'+p.c+'"><div class="hb"><div class="ht" style="color:'+p.cc+'">'+esc(p.t)+'</div><div class="hs" style="color:'+p.cc+'">'+esc(p.s)+'</div></div><div class="himg">'+IC.photo+'</div></div>').join('')+'</div>'+
+    '<div class="herodots">'+promos.map((_,i)=>'<span class="dot'+(i===0?' on':'')+'"></span>').join('')+'</div>'+
     '<div class="h2">Theme collections</div>'+
     '<div class="tstrip">'+featured.map(id=>{const c=COLS[id];return '<div class="tcard" onclick="go(\'collection\',\''+id+'\')"><div class="tthumb">'+IC.photo+'</div><div class="tb"><div class="nm">'+esc(c.name)+'</div><div class="tg">'+c.tag.split(' ')[0].toLowerCase()+'</div></div></div>'}).join('')+'</div>'+
     '<div class="h2">Categories</div>'+
     '<div class="catrow">'+mains.map(id=>{const m=N[id];return '<div class="catcard" onclick="go(\'plp\',\''+id+'\')"><span>'+m.icon+'</span>'+esc(m.name)+'</div>'}).join('')+'</div>'+
     '<div class="h2">Shop by country</div>'+
     '<div class="flagrow">'+['korea','japan','china'].map(id=>{const c=N[id];return '<div class="flag" onclick="go(\'plp\',\''+id+'\')"><span>'+c.flag+'</span>'+c.name+'</div>'}).join('')+'</div>'+
-    '<div class="foot">momogo mobile IA prototype · v2 · sample data</div>';
+    '<div class="foot">momogo mobile IA prototype · v3 · sample data</div>';
 }
 
 /* ============ drawer ============ */
